@@ -1,0 +1,29 @@
+{
+    "name": "elboletaire/less-cake-plugin",
+    "authors": [
+        {
+            "name": "Òscar Casajuana",
+            "email": "elboletaire@underave.net",
+            "homepage": "http://racotecnic.com",
+            "role": "Developer"
+        }
+    ],
+    "description": "Less parser plugin for CakePHP",
+    "type": "cakephp-plugin",
+    "keywords": ["cakephp", "less", "parser", "css", "plugin"],
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=5.4.19",
+        "cakephp/plugin-installer": "*",
+        "cakephp/cakephp": "3.0.x-dev",
+        "oyejorge/less.php": "1.7.0.2"
+    },
+    "extra": {
+        "installer-name": "Less"
+    },
+    "autoload": {
+        "psr-4": {
+            "Less\\": "src"
+        }
+    }
+}
