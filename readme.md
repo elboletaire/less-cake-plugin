@@ -3,7 +3,7 @@ Less parser plugin for CakePHP 3.X
 
 This plugin has a helper to help you parsing `.less` files in CakePHP 3.0 applications.
 
-By default, the helper will parse all less files to CSS files using [less.php](https://github.com/oyejorge/less.php) but if, for any reason, it fails, will fallback to the [less.js](http://lesscss.org/#download-options) parser both included by this plugin (this way you'll any errors on screen).
+By default, the helper will parse all less files to CSS files using [less.php](https://github.com/oyejorge/less.php) but if, for any reason, it fails, will fallback to the [less.js](http://lesscss.org/#download-options) parser both included by this plugin (this way you'll see any errors on screen).
 
 Installation
 ------------
