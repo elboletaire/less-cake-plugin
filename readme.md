@@ -1,7 +1,7 @@
-Less parser plugin for CakePHP
-==============================
+Less parser plugin for CakePHP 3.X
+==================================
 
-This plugin has a helper to help use parsing less files in CakePHP applications.
+This plugin has a helper to help you parsing `.less` files in CakePHP 3.0 applications.
 
 Installation
 ------------
