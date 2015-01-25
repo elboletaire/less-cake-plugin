@@ -8,6 +8,7 @@
 namespace Less\View\Helper;
 
 use Cake\Core\Plugin;
+use Cake\Core\Configure;
 use Cake\Log\Log;
 use Cake\View\View;
 use Cake\Routing\Router;
@@ -15,6 +16,9 @@ use Cake\View\Helper;
 
 class LessHelper extends Helper
 {
+/**
+ * {@inheritdoc}
+ */
 	public $helpers = [
 		'Html', 'Url'
 	];
@@ -54,28 +58,32 @@ class LessHelper extends Helper
 
 /**
  * Initializes Lessc and cleans less and css paths
+ *
+ * {@inheritdoc}
  */
 	public function __construct(View $View, array $config = [])
 	{
 		parent::__construct($View, $config);
 
 		// Initialize oyejorge/less.php parser
-		require ROOT . DS . 'vendor' . DS . 'oyejorge' . DS . 'less.php' . DS . 'lib' . DS . 'Less' . DS . 'Autoloader.php';
+		require_once ROOT . DS . 'vendor' . DS . 'oyejorge' . DS . 'less.php' . DS . 'lib' . DS . 'Less' . DS . 'Autoloader.php';
 		\Less_Autoloader::register();
 
-		$this->css_path  = trim($this->css_path, '/');
+		$this->css_path  = WWW_ROOT . trim($this->css_path, '/');
 	}
 
 /**
- * Compile the less and return a css <link> tag.
- * In case of error, it will load less with  javascript
- * instead of returning the resulting css <link> tag.
+ * Compiles any less files passed and returns the compiled css.
+ * In case of error, it will load less with the javascritp parser so you'll be
+ * able to see any errors on screen. If not, check out the error.log file in your
+ * CakePHP's logs folder.
  *
- * @param  mixed $less The input .less file to be compiled or an array of .less files
- * @param  array $parser_options The options to be passed to the less php compiler
- * @param  array  $lessjs_options An array of options to be passed as a json to the less javascript object.
- * @return string The resulting <link> tag for the compiled css, or the <link> tag for the .less & less.min if compilation fails
- * @throws Exception
+ * @param  mixed $less         The input .less file to be compiled or an array
+ *                             of .less files
+ * @param  array  $options     Options in 'js' key will be pased to the less.js
+ *                             parser and options in 'parser' will be passed to the less.php parser
+ * @param  array  $modify_vars Array of modify vars
+ * @return string
  */
 	public function less($less = 'styles.less', array $options = [], array $modify_vars = [])
 	{
@@ -96,17 +104,21 @@ class LessHelper extends Helper
 			}
 			return $this->Html->css($css);
 		}
-		catch (Exception $e) {
-			$this->error = $e->getMessage();
+		catch (\Exception $e) {
+			// env must be development in order to see errors on-screen
+			if (Configure::read('debug')) {
+				$options['js']['env'] = 'development';
+			}
 
-			Log::write('warning', "Error compiling less file: " . $this->error);
+			$this->error = $e->getMessage();
+			Log::write('error', "Error compiling less file: " . $this->error);
 
 			return $this->jsBlock($less, $options);
 		}
 	}
 
 /**
- * Returns the initialization string for less (javascript based)
+ * Returns the required script and link tags to get less.js working
  *
  * @param  string $less The input .less file to be loaded
  * @param  array  $options An array of options to be passed to the `less` configuration var
@@ -132,16 +144,18 @@ class LessHelper extends Helper
 
 /**
  * Compiles an input less file to an output css file using the PHP compiler
- *
- * @param  string $input The input .less file to be compiled
- * @param  string $output The output .css file, resulting from the compilation
- * @return boolean true on success, false otherwise
+ * @param  array   $input       The input .less files to be compiled
+ * @param  array   $options     Options to be passed to the php parser
+ * @param  array   $modify_vars Less modify_vars
+ * @param  boolean $cache       Whether to cache or not
+ * @return string				If cache is not enabled will return the full CSS compiled.
+ *                      		Otherwise it will return the resulting filename from the compilation.
  */
-	public function compile($input, array $options = [], array $modify_vars = [], $cache = true)
+	public function compile(array $input, array $options = [], array $modify_vars = [], $cache = true)
 	{
 		$to_parse = [];
 		foreach ($input as $in) {
-			$less = realpath($in);
+			$less = realpath(WWW_ROOT . $in);
 			// If we have plugin notation, ensure to properly load the files
 			list($plugin, $name) = $this->_View->pluginSplit($in, false);
 			if (!empty($plugin)) {
@@ -159,11 +173,14 @@ class LessHelper extends Helper
 		}
 
 		$lessc = new \Less_Parser($options);
-		$lessc->ModifyVars($modify_vars);
 
 		foreach ($to_parse as $file => $path) {
 			$lessc->parseFile($file, $path);
 		}
+		// ModifyVars must be called at the bottom of the parsing,
+		// this way we're ensuring they override their default values.
+		// http://lesscss.org/usage/#command-line-usage-modify-variable
+		$lessc->ModifyVars($modify_vars);
 
 		return $lessc->getCss();
 	}
@@ -171,6 +188,9 @@ class LessHelper extends Helper
 /**
  * Sets the less configuration var options based on the ones given by the user
  * and our default ones.
+ *
+ * Here's also where we define the import_callback used by less.php parser,
+ * so it can find files successfully even if they're on plugin folders.
  *
  * @param array  $options An array of options containing our options combined with the ones for the parsers
  * @return array $options The resulting $options array
@@ -226,17 +246,17 @@ class LessHelper extends Helper
 		return $options;
 	}
 
-	/**
-	 * Returns tha full base url for the given asset
-	 *
-	 * @param  string $asset  The asset path
-	 * @param  string $plugin Plugin where the asset resides
-	 * @return string
-	 */
-	private function assetBaseUrl($asset, $plugin = 'Bootstrap')
+/**
+ * Returns tha full base url for the given asset
+ *
+ * @param  string $asset  The asset path
+ * @param  string $plugin Plugin where the asset resides
+ * @return string
+ */
+	private function assetBaseUrl($asset, $plugin)
 	{
 		$dir  = dirname($asset);
-		$path = !empty($dir) ? "/$dir" : null;
+		$path = !empty($dir) && $dir != '.' ? "/$dir" : null;
 
 		return $this->Url->assetUrl($plugin . $path, [
 			'fullBase' => true
