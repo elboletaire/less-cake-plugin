@@ -27,6 +27,12 @@ After installing it you'll need to load it on your `bootstrap.php` file:
 Plugin::load('Less');
 ```
 
+And load it into your AppController:
+
+```php
+public $helpers = ['Less.Less'];
+```
+
 Usage
 -----
 
