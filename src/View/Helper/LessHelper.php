@@ -3,16 +3,17 @@
  * Helper for using less.php with cakephp
  *
  * @author Òscar Casajuana <elboletaire@underave.net>
- * @version 3.0.1
+ * @license Apache-2.0
+ * @copyright Òscar Casajuana 2013-2015
  */
 namespace Less\View\Helper;
 
-use Cake\Core\Plugin;
-use Cake\Core\Configure;
 use Cake\Log\Log;
 use Cake\View\View;
-use Cake\Routing\Router;
 use Cake\View\Helper;
+use Cake\Core\Plugin;
+use Cake\Core\Configure;
+use Cake\Utility\Inflector;
 
 class LessHelper extends Helper
 {
@@ -73,6 +74,49 @@ class LessHelper extends Helper
     }
 
 /**
+ * Fetches less stylesheets added to css block
+ * and compiles them
+ *
+ * @param  array $options     Options passed to less method
+ * @param  array $modify_vars ModifyVars passed to less method
+ * @return string             Resulting parsed files
+ */
+    public function fetch(array $options = [], array $modify_vars = [])
+    {
+        if (empty($options['overwrite'])) {
+            $options['overwrite'] = true;
+        }
+        $overwrite = $options['overwrite'];
+        unset($options['overwrite']);
+
+        $matches = $css = $less = [];
+        preg_match_all('@(<link[^>]+>)@', $this->_View->fetch('css'), $matches);
+
+        if (empty($matches)) {
+            return null;
+        }
+
+        $matches = array_shift($matches);
+
+        foreach ($matches as $stylesheet) {
+            if (strpos($stylesheet, 'rel="stylesheet/less"') !== false) {
+                $match = [];
+                preg_match('@href="([^"]+)"@', $stylesheet, $match);
+                $file = rtrim(array_pop($match), '?');
+                array_push($less, $this->less($file, $options, $modify_vars));
+            } else {
+                array_push($css, $stylesheet);
+            }
+        }
+
+        if ($overwrite) {
+            $this->_View->Blocks->set('css', join($css));
+        }
+
+        return join($less);
+    }
+
+/**
  * Compiles any less files passed and returns the compiled css.
  * In case of error, it will load less with the javascritp parser so you'll be
  * able to see any errors on screen. If not, check out the error.log file in your
@@ -88,7 +132,7 @@ class LessHelper extends Helper
     public function less($less = 'styles.less', array $options = [], array $modify_vars = [])
     {
         $options = $this->setOptions($options);
-        $less = (array)$less;
+        $less    = (array)$less;
 
         if ($options['js']['env'] == 'development') {
             return $this->jsBlock($less, $options);
@@ -127,6 +171,8 @@ class LessHelper extends Helper
     public function jsBlock($less, array $options = [])
     {
         $return = '';
+        $less   = (array)$less;
+
         // Append the user less files
         foreach ($less as $les) {
             $return .= $this->Html->meta('link', null, [
@@ -156,15 +202,29 @@ class LessHelper extends Helper
         $to_parse = [];
         foreach ($input as $in) {
             $less = realpath(WWW_ROOT . $in);
-            // If we have plugin notation, ensure to properly load the files
-            list($plugin, $name) = $this->_View->pluginSplit($in, false);
+            // If we have plugin notation (Plugin.less/file.less)
+            // ensure to properly load the files
+            list($plugin, $basefile) = $this->_View->pluginSplit($in, false);
             if (!empty($plugin)) {
-                $less = Plugin::path($plugin) . 'webroot' . DS . $name;
+                $less = realpath(Plugin::path($plugin) . 'webroot' . DS . $basefile);
 
-                $to_parse[$less] = $this->assetBaseUrl($name, $plugin);
-                continue;
+                if ($less !== false) {
+                    $to_parse[$less] = $this->assetBaseUrl($plugin, $basefile);
+                    continue;
+                }
             }
-            $to_parse[$less] = '';
+            if ($less !== false) {
+                $to_parse[$less] = '';
+            } else {
+                // Plugins without plugin notation (/plugin/less/file.less)
+                list($plugin, $basefile) = $this->assetSplit($in);
+                if ($file = $this->pluginAssetFile([$plugin, $basefile])) {
+                    $to_parse[$file] = $this->assetBaseUrl($plugin, $basefile);
+                } else {
+                    // Will probably throw a not found error
+                    $to_parse[$in] = '';
+                }
+            }
         }
 
         if ($cache) {
@@ -206,18 +266,14 @@ class LessHelper extends Helper
                     return $path_and_uri;
                 }
 
-                $basefile = $lessTree->getPath();
-                $basefile = ltrim(ltrim($basefile, '.'), '/');
-                $exploded = explode('/', $basefile);
-                $plugin   = ucfirst(array_shift($exploded));
-                $basefile = implode('/', $exploded);
+                $file = $lessTree->getPath();
+                list($plugin, $basefile) = $this->assetSplit($file);
+                $file = $this->pluginAssetFile([$plugin, $basefile]);
 
-                $plugin_file = realpath(Plugin::path($plugin) . 'webroot' . DS . $basefile);
-
-                if (file_exists($plugin_file)) {
+                if ($file) {
                     return [
-                        $plugin_file,
-                        $this->assetBaseUrl($basefile, $plugin)
+                        $file,
+                        $this->assetBaseUrl($plugin, $basefile)
                     ];
                 }
 
@@ -253,7 +309,7 @@ class LessHelper extends Helper
  * @param  string $plugin Plugin where the asset resides
  * @return string
  */
-    private function assetBaseUrl($asset, $plugin)
+    private function assetBaseUrl($plugin, $asset)
     {
         $dir  = dirname($asset);
         $path = !empty($dir) && $dir != '.' ? "/$dir" : null;
@@ -261,5 +317,40 @@ class LessHelper extends Helper
         return $this->Url->assetUrl($plugin . $path, [
             'fullBase' => true
         ]);
+    }
+
+/**
+ * Builds asset file path for a plugin based on url.
+ *
+ * @param string  $url Asset URL
+ * @return string Absolute path for asset file
+ */
+    private function pluginAssetFile(array $url)
+    {
+        list($plugin, $basefile) = $url;
+
+        if ($plugin && Plugin::loaded($plugin)) {
+            return realpath(Plugin::path($plugin) . 'webroot' . DS . $basefile);
+        }
+
+        return false;
+    }
+
+/**
+ * Splits an asset URL
+ *
+ * @param  string $url Asset URL
+ * @return array       The plugin as first key and the rest basefile as second key
+ */
+    private function assetSplit($url)
+    {
+        $basefile = ltrim(ltrim($url, '.'), '/');
+        $exploded = explode('/', $basefile);
+        $plugin   = Inflector::camelize(array_shift($exploded));
+        $basefile = implode(DS, $exploded);
+
+        return [
+            $plugin, $basefile
+        ];
     }
 }
