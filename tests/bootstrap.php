@@ -16,10 +16,10 @@ define('CAKE_CORE_INCLUDE_PATH', ROOT . 'vendor' . DS . 'cakephp' . DS . 'cakeph
 define('CORE_PATH', ROOT . 'vendor' . DS . 'cakephp' . DS . 'cakephp' . DS);
 define('CAKE', CORE_PATH . 'src' . DS);
 define('TESTS', ROOT . 'tests');
-define('APP', ROOT . 'tests' . DS . 'test_files' . DS . 'app' . DS);
-define('APP_DIR', 'app');
+define('APP_DIR', 'test_files');
+define('APP', ROOT . 'tests' . DS . APP_DIR . DS);
 define('WEBROOT_DIR', 'webroot');
-define('WWW_ROOT', dirname(APP) . DS . 'webroot' . DS);
+define('WWW_ROOT', APP . 'webroot' . DS);
 define('TMP', sys_get_temp_dir() . DS);
 define('CONFIG', APP . 'config' . DS);
 define('CACHE', TMP);
@@ -44,7 +44,7 @@ Configure::write('App', [
     'jsBaseUrl'    => 'js/',
     'cssBaseUrl'   => 'css/',
     'paths'        => [
-        'plugins'   => [dirname(APP) . DS . 'plugins' . DS],
+        'plugins'   => [APP . 'plugins' . DS],
         'templates' => [APP . 'Template' . DS]
     ]
 ]);
@@ -63,3 +63,4 @@ Cache::config([
 ]);
 
 Plugin::load('Less', ['path' => ROOT]);
+Plugin::load('Test');

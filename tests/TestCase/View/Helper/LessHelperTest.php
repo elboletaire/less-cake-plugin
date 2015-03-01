@@ -1,4 +1,11 @@
 <?php
+/**
+ * Test file for Less Helper
+ *
+ * @author Òscar Casajuana <elboletaire@underave.net>
+ * @license Apache-2.0
+ * @copyright Òscar Casajuana 2013-2015
+ */
 namespace Less\Test\TestCase\View\Helper;
 
 use Less\View\Helper\LessHelper;
@@ -14,6 +21,11 @@ class LessHelperTest extends TestCase
         parent::setUp();
         $View = new View();
         $this->Less = new LessHelper($View);
+    }
+
+    public function testFetch()
+    {
+        // TODO
     }
 
     public function testLess()
@@ -47,19 +59,36 @@ class LessHelperTest extends TestCase
                 'rel' => 'stylesheet/less',
                 'href' => '/less/test_error.less'
             ],
-            /*['script' => true],
-            // Need some help here :p
+            ['script' => true],
+            'preg:/\/\/<!\[CDATA\[\s*less\s=\s\{"env":"development"\};\s*\/\/\]\]>\s*/',
             '/script',
             'script' => [
                 'src' => '/less/js/less.min.js'
-            ]*/
+            ]
         ], $result);
     }
 
-    // public function testJsBlock()
-    // {
+    public function testJsBlock()
+    {
+        $options = [
+            'less' => 'less.empty.js',
+            'js'   => []
+        ];
 
-    // }
+        $result = $this->Less->jsBlock('less/test.less', $options);
+        $this->assertHtml([
+            'link' => [
+                'rel' => 'stylesheet/less',
+                'href' => '/less/test.less'
+            ],
+            ['script' => true],
+            'preg:/\/\/<!\[CDATA\[\s*less\s=\s\[\];\s*\/\/\]\]>\s*/',
+            '/script',
+            'script' => [
+                'src' => '/js/less.empty.js'
+            ]
+        ], $result);
+    }
 
     public function testCompile()
     {
@@ -73,6 +102,14 @@ class LessHelperTest extends TestCase
 
         // Changing the bgcolor var
         $result = $this->Less->compile(['less/test.less'], $options, ['bgcolor' => 'magenta'], false);
+        $this->assertTextEquals('body{background-color: #f0f}', $result);
+
+        // Compiling plugin file
+        $result = $this->Less->compile(['Test.less/test.less'], $options, [], false);
+        $this->assertTextEquals('body{background-color: #f0f}', $result);
+
+        // Same but not using plugin notation
+        $result = $this->Less->compile(['/Test/less/test.less'], $options, [], false);
         $this->assertTextEquals('body{background-color: #f0f}', $result);
 
         // Compiling with cache
@@ -92,25 +129,26 @@ class LessHelperTest extends TestCase
     {
         $assetBaseUrl = self::getProtectedMethod('assetBaseUrl');
         $result = $assetBaseUrl->invokeArgs($this->Less, [
-            'less/styles.less',
-            'Less'
+            'Less',
+            'less/styles.less'
         ]);
         $this->assertEquals('http://localhost/Less/less', $result);
 
         $result = $assetBaseUrl->invokeArgs($this->Less, [
-            'css/whatever.less',
-            'Bootstrap'
+            'Bootstrap',
+            'css/whatever.less'
         ]);
         $this->assertEquals('http://localhost/Bootstrap/css', $result);
 
         $result = $assetBaseUrl->invokeArgs($this->Less, [
-            'whatever.less',
-            'Less'
+            'Less',
+            'whatever.less'
         ]);
         $this->assertEquals('http://localhost/Less', $result);
     }
 
-    protected static function getProtectedMethod($name) {
+    protected static function getProtectedMethod($name)
+    {
         $class = new \ReflectionClass('Less\View\Helper\LessHelper');
         $method = $class->getMethod($name);
         $method->setAccessible(true);
