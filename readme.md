@@ -64,11 +64,11 @@ Or you can load your less files with the HtmlHelper sending the files to the
 CSS block:
 
 ```php
-$this->Html->css('/less/styles.less?', ['block' => true]);
+$this->Html->css('/less/styles.less?', ['block' => true, 'rel' => 'stylesheet/less']);
 ```
 
-> Note the '?' at the end of the filename. It's used to force the .less
-extension. Otherwise it would be overwriten to styles.less.css by the UrlHelper.
+> Note the `?` at the end of the filename. It's used to force the .less
+extension. Otherwise it would be overwriten to `styles.less.css` by the UrlHelper.
 
 And then parse all your files using the fetch method:
 
