@@ -121,7 +121,7 @@ class LessHelper extends AppHelper
             ));
         }
         // Less.js configuration
-        $return .= $this->Html->scriptBlock(sprintf('less = %s;', str_replace('\\/', '/', json_encode($options['js']))));
+        $return .= $this->Html->scriptBlock(sprintf('less = %s;', json_encode($options['js'], JSON_UNESCAPED_SLASHES)));
         // <script> tag for less.js file
         $return .= $this->Html->script($options['less']);
 
