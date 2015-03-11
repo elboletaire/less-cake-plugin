@@ -2,9 +2,10 @@
 /**
  * Helper for using less.php with cakephp
  *
- * @author    Aleix Fabra <aleixfabra@gmail.com>
- * @license   Apache-2.0
- * @copyright Aleix Fabra 2015
+ * @author Òscar Casajuana <elboletaire@underave.net>
+ * @author Aleix Fabra <aleixfabra@gmail.com>
+ * @license Apache-2.0
+ * @copyright Òscar Casajuana 2013-2015
  */
 class LessHelper extends AppHelper
 {
