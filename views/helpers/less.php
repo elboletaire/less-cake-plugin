@@ -3,51 +3,36 @@
  * Helper for using less.php with cakephp
  *
  * @author Òscar Casajuana <elboletaire@underave.net>
+ * @author Aleix Fabra <aleixfabra@gmail.com>
  * @license Apache-2.0
  * @copyright Òscar Casajuana 2013-2015
  */
-namespace Less\View\Helper;
-
-use Cake\Log\Log;
-use Cake\View\View;
-use Cake\View\Helper;
-use Cake\Core\Plugin;
-use Cake\Core\Configure;
-use Cake\Utility\Inflector;
-
-class LessHelper extends Helper
+class LessHelper extends AppHelper
 {
 /**
  * {@inheritdoc}
  */
-    public $helpers = [
-        'Html', 'Url'
-    ];
+    public $helpers = array(
+        'Html'
+    );
 
 /**
  * Default lessjs options. Some are defined on setOptions due to the need of using methods.
  *
  * @var array
  */
-    public $lessjs_defaults = [
+    public $lessjs_defaults = array(
         'env' => 'production'
-    ];
+    );
 
 /**
  * Default lessc options. Some are defined on setOptions due to the need of using methods.
  *
  * @var array
  */
-    private $parser_defaults = [
+    private $parser_defaults = array(
         'compress' => true
-    ];
-
-/**
- * Stores the compilation error, in case it occurs
- *
- * @var boolean
- */
-    public $error = false;
+    );
 
 /**
  * The css path name, where the output files will be stored
@@ -62,58 +47,13 @@ class LessHelper extends Helper
  *
  * {@inheritdoc}
  */
-    public function __construct(View $View, array $config = [])
+    public function __construct()
     {
-        parent::__construct($View, $config);
-
         // Initialize oyejorge/less.php parser
-        require_once ROOT . DS . 'vendor' . DS . 'oyejorge' . DS . 'less.php' . DS . 'lib' . DS . 'Less' . DS . 'Autoloader.php';
-        \Less_Autoloader::register();
+        require_once ROOT . DS . 'app' . DS . 'vendors' . DS . 'less.php' . DS . 'lib' . DS . 'Less' . DS . 'Autoloader.php';
+        Less_Autoloader::register();
 
         $this->css_path  = WWW_ROOT . trim($this->css_path, '/');
-    }
-
-/**
- * Fetches less stylesheets added to css block
- * and compiles them
- *
- * @param  array $options     Options passed to less method
- * @param  array $modify_vars ModifyVars passed to less method
- * @return string             Resulting parsed files
- */
-    public function fetch(array $options = [], array $modify_vars = [])
-    {
-        if (empty($options['overwrite'])) {
-            $options['overwrite'] = true;
-        }
-        $overwrite = $options['overwrite'];
-        unset($options['overwrite']);
-
-        $matches = $css = $less = [];
-        preg_match_all('@(<link[^>]+>)@', $this->_View->fetch('css'), $matches);
-
-        if (empty($matches)) {
-            return null;
-        }
-
-        $matches = array_shift($matches);
-
-        foreach ($matches as $stylesheet) {
-            if (strpos($stylesheet, 'rel="stylesheet/less"') !== false) {
-                $match = [];
-                preg_match('@href="([^"]+)"@', $stylesheet, $match);
-                $file = rtrim(array_pop($match), '?');
-                array_push($less, $this->less($file, $options, $modify_vars));
-            } else {
-                array_push($css, $stylesheet);
-            }
-        }
-
-        if ($overwrite) {
-            $this->_View->Blocks->set('css', join($css));
-        }
-
-        return join($less);
     }
 
 /**
@@ -129,7 +69,7 @@ class LessHelper extends Helper
  * @param  array  $modify_vars Array of modify vars
  * @return string
  */
-    public function less($less = 'styles.less', array $options = [], array $modify_vars = [])
+    public function less($less = 'styles.less', $options = array(), $modify_vars = array())
     {
         $options = $this->setOptions($options);
         $less    = (array)$less;
@@ -144,18 +84,18 @@ class LessHelper extends Helper
                 return $css;
             }
             if (!$options['cache']) {
-                return $this->Html->formatTemplate('style', ['content' => $css]);
+                return $this->Html->formatTemplate('style', array('content' => $css));
             }
             return $this->Html->css($css);
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             // env must be development in order to see errors on-screen
             if (Configure::read('debug')) {
                 $options['js']['env'] = 'development';
             }
 
             $this->error = $e->getMessage();
-            Log::write('error', "Error compiling less file: " . $this->error);
+            $this->log("Error compiling less file: " . $this->error, 'less');
 
             return $this->jsBlock($less, $options);
         }
@@ -168,17 +108,17 @@ class LessHelper extends Helper
  * @param  array  $options An array of options to be passed to the `less` configuration var
  * @return string The link + script tags need to launch lesscss
  */
-    public function jsBlock($less, array $options = [])
+    public function jsBlock($less, array $options = array())
     {
         $return = '';
         $less   = (array)$less;
 
         // Append the user less files
         foreach ($less as $les) {
-            $return .= $this->Html->meta('link', null, [
-                'link' => $les,
+            $return .= $this->Html->meta('link', null, array(
+                'link' => '/' . $les,
                 'rel'  => 'stylesheet/less'
-            ]);
+            ));
         }
         // Less.js configuration
         $return .= $this->Html->scriptBlock(sprintf('less = %s;', json_encode($options['js'], JSON_UNESCAPED_SLASHES)));
@@ -197,16 +137,17 @@ class LessHelper extends Helper
  * @return string               If cache is not enabled will return the full CSS compiled.
  *                              Otherwise it will return the resulting filename from the compilation.
  */
-    public function compile(array $input, array $options = [], array $modify_vars = [], $cache = true)
+    public function compile($input, $options = array(), $modify_vars = array(), $cache = true)
     {
-        $to_parse = [];
+        $to_parse = array();
         foreach ($input as $in) {
             $less = realpath(WWW_ROOT . $in);
             // If we have plugin notation (Plugin.less/file.less)
             // ensure to properly load the files
-            list($plugin, $basefile) = $this->_View->pluginSplit($in, false);
-            if (!empty($plugin)) {
-                $less = realpath(Plugin::path($plugin) . 'webroot' . DS . $basefile);
+            list($plugin, $basefile) = pluginSplit($in, false);
+
+            if (!empty($plugin) && $this->notFile($basefile)) {
+                $less = realpath(App::pluginPath($plugin) . 'webroot' . DS . $basefile);
 
                 if ($less !== false) {
                     $to_parse[$less] = $this->assetBaseUrl($plugin, $basefile);
@@ -218,7 +159,7 @@ class LessHelper extends Helper
             } else {
                 // Plugins without plugin notation (/plugin/less/file.less)
                 list($plugin, $basefile) = $this->assetSplit($in);
-                if ($file = $this->pluginAssetFile([$plugin, $basefile])) {
+                if ($file = $this->pluginAssetFile(array($plugin, $basefile))) {
                     $to_parse[$file] = $this->assetBaseUrl($plugin, $basefile);
                 } else {
                     // Will probably throw a not found error
@@ -228,11 +169,11 @@ class LessHelper extends Helper
         }
 
         if ($cache) {
-            $options += ['cache_dir' => $this->css_path];
-            return \Less_Cache::Get($to_parse, $options, $modify_vars);
+            $options += array('cache_dir' => $this->css_path);
+            return Less_Cache::Get($to_parse, $options, $modify_vars);
         }
 
-        $lessc = new \Less_Parser($options);
+        $lessc = new Less_Parser($options);
 
         foreach ($to_parse as $file => $path) {
             $lessc->parseFile($file, $path);
@@ -257,7 +198,7 @@ class LessHelper extends Helper
  */
     private function setOptions(array $options)
     {
-        $this->parser_defaults = array_merge($this->parser_defaults, [
+        $this->parser_defaults = array_merge($this->parser_defaults, array(
             // The import callback ensures that if a file is not found in the
             // app's webroot, it will search for that file in its plugin's
             // webroot path
@@ -266,33 +207,33 @@ class LessHelper extends Helper
                     return $path_and_uri;
                 }
 
-                $file = $lessTree->getPath();
+                $file                    = $lessTree->getPath();
                 list($plugin, $basefile) = $this->assetSplit($file);
-                $file = $this->pluginAssetFile([$plugin, $basefile]);
+                $file                    = $this->pluginAssetFile(array($plugin, $basefile));
 
                 if ($file) {
-                    return [
+                    return array(
                         $file,
                         $this->assetBaseUrl($plugin, $basefile)
-                    ];
+                    );
                 }
 
                 return null;
             }
-        ]);
+        ));
 
         if (empty($options['parser'])) {
-            $options['parser'] = [];
+            $options['parser'] = array();
         }
         $options['parser'] = array_merge($this->parser_defaults, $options['parser']);
 
         if (empty($options['js'])) {
-            $options['js'] = [];
+            $options['js'] = array();
         }
         $options['js'] = array_merge($this->lessjs_defaults, $options['js']);
 
         if (empty($options['less'])) {
-            $options['less'] = 'Less.less.min';
+            $options['less'] = 'less.min';
         }
 
         if (!isset($options['cache'])) {
@@ -300,40 +241,6 @@ class LessHelper extends Helper
         }
 
         return $options;
-    }
-
-/**
- * Returns tha full base url for the given asset
- *
- * @param  string $asset  The asset path
- * @param  string $plugin Plugin where the asset resides
- * @return string
- */
-    private function assetBaseUrl($plugin, $asset)
-    {
-        $dir  = dirname($asset);
-        $path = !empty($dir) && $dir != '.' ? "/$dir" : null;
-
-        return $this->Url->assetUrl($plugin . $path, [
-            'fullBase' => true
-        ]);
-    }
-
-/**
- * Builds asset file path for a plugin based on url.
- *
- * @param string  $url Asset URL
- * @return string Absolute path for asset file
- */
-    private function pluginAssetFile(array $url)
-    {
-        list($plugin, $basefile) = $url;
-
-        if ($plugin && Plugin::loaded($plugin)) {
-            return realpath(Plugin::path($plugin) . 'webroot' . DS . $basefile);
-        }
-
-        return false;
     }
 
 /**
@@ -349,8 +256,40 @@ class LessHelper extends Helper
         $plugin   = Inflector::camelize(array_shift($exploded));
         $basefile = implode(DS, $exploded);
 
-        return [
+        return array(
             $plugin, $basefile
-        ];
+        );
+    }
+
+/**
+ * Builds asset file path for a plugin based on url.
+ *
+ * @param string  $url Asset URL
+ * @return string Absolute path for asset file
+ */
+    private function pluginAssetFile(array $url)
+    {
+        list($plugin, $basefile) = $url;
+
+        if ($plugin) {
+            return realpath(App::pluginPath($plugin) . 'webroot' . DS . $basefile);
+        }
+
+        return false;
+    }
+
+/**
+ * Check if class name is not a file
+ *
+ * @param  string $basefile Class name
+ * @return bool             Return true if not match with any file extension
+ */
+    private function notFile($basefile) {
+        $extensions = array('less', 'css');
+
+        if (in_array($basefile, $extensions)) {
+            return false;
+        }
+        return true;
     }
 }
