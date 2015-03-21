@@ -146,7 +146,7 @@ class LessHelper extends AppHelper
             // ensure to properly load the files
             list($plugin, $basefile) = pluginSplit($in, false);
 
-            if (!empty($plugin) && $this->notFile($basefile)) {
+            if (!empty($plugin) && $this->isNotAFile($basefile)) {
                 $less = realpath(App::pluginPath($plugin) . 'webroot' . DS . $basefile);
 
                 if ($less !== false) {
@@ -284,7 +284,7 @@ class LessHelper extends AppHelper
  * @param  string $basefile Class name
  * @return bool             Return true if not match with any file extension
  */
-    private function notFile($basefile) {
+    private function isNotAFile($basefile) {
         $extensions = array('less', 'css');
 
         if (in_array($basefile, $extensions)) {
