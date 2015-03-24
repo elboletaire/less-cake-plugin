@@ -1,10 +1,10 @@
 Less parser plugin for CakePHP 3.X
 ==================================
 
-[![Latest Stable Version](https://poser.pugx.org/elboletaire/less-cake-plugin/v/stable.svg)](https://packagist.org/packages/elboletaire/less-cake-plugin)
-[![Total Downloads](https://poser.pugx.org/elboletaire/less-cake-plugin/downloads.svg)](https://packagist.org/packages/elboletaire/less-cake-plugin)
-[![Latest Unstable Version](https://poser.pugx.org/elboletaire/less-cake-plugin/v/unstable.svg)](https://packagist.org/packages/elboletaire/less-cake-plugin)
-[![License](https://poser.pugx.org/elboletaire/less-cake-plugin/license.svg)](https://packagist.org/packages/elboletaire/less-cake-plugin)
+[![Latest Stable Version](https://img.shields.io/packagist/v/elboletaire/less-cake-plugin.svg)](https://packagist.org/packages/elboletaire/less-cake-plugin)
+[![Total Downloads](https://img.shields.io/packagist/dt/elboletaire/twbs-cake-plugin.svg)](https://packagist.org/packages/elboletaire/less-cake-plugin)
+[![Latest Unstable Version](https://img.shields.io/packagist/vpre/elboletaire/less-cake-plugin.svg)](https://packagist.org/packages/elboletaire/less-cake-plugin)
+[![License](https://img.shields.io/packagist/l/elboletaire/less-cake-plugin.svg)](https://packagist.org/packages/elboletaire/less-cake-plugin)
 
 This plugin has a helper to help you parsing `.less` files in CakePHP 3.0 applications.
 
