@@ -67,7 +67,10 @@ class LessHelper extends Helper
         parent::__construct($View, $config);
 
         // Initialize oyejorge/less.php parser
-        require_once ROOT . DS . 'vendor' . DS . 'oyejorge' . DS . 'less.php' . DS . 'lib' . DS . 'Less' . DS . 'Autoloader.php';
+        require_once ROOT . DS . 'vendor' . DS . 'oyejorge' . DS . 'less.php' .
+            DS . 'lib' . DS . 'Less' . DS . 'Autoloader.php'
+        ;
+
         \Less_Autoloader::register();
 
         $this->css_path  = WWW_ROOT . trim($this->css_path, '/');
@@ -147,8 +150,7 @@ class LessHelper extends Helper
                 return $this->Html->formatTemplate('style', ['content' => $css]);
             }
             return $this->Html->css($css);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             // env must be development in order to see errors on-screen
             if (Configure::read('debug')) {
                 $options['js']['env'] = 'development';
@@ -261,7 +263,7 @@ class LessHelper extends Helper
             // The import callback ensures that if a file is not found in the
             // app's webroot, it will search for that file in its plugin's
             // webroot path
-            'import_callback' => function($lessTree) {
+            'import_callback' => function ($lessTree) {
                 if ($path_and_uri = $lessTree->PathAndUri()) {
                     return $path_and_uri;
                 }
