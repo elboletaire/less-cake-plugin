@@ -84,9 +84,9 @@ class LessHelper extends Helper
      * Fetches less stylesheets added to css block
      * and compiles them
      *
-     * @param  array $options     Options passed to less method
-     * @param  array $modify_vars ModifyVars passed to less method
-     * @return string             Resulting parsed files
+     * @param  array $options     Options passed to less method.
+     * @param  array $modify_vars ModifyVars passed to less method.
+     * @return string             Resulting parsed files.
      */
     public function fetch(array $options = [], array $modify_vars = [])
     {
@@ -130,10 +130,10 @@ class LessHelper extends Helper
      * CakePHP's logs folder.
      *
      * @param  mixed $less         The input .less file to be compiled or an array
-     *                             of .less files
+     *                             of .less files.
      * @param  array  $options     Options in 'js' key will be pased to the less.js
-     *                             parser and options in 'parser' will be passed to the less.php parser
-     * @param  array  $modify_vars Array of modify vars
+     *                             parser and options in 'parser' will be passed to the less.php parser.
+     * @param  array  $modify_vars Array of modify vars.
      * @return string
      */
     public function less($less = 'styles.less', array $options = [], array $modify_vars = [])
@@ -170,9 +170,9 @@ class LessHelper extends Helper
     /**
      * Returns the required script and link tags to get less.js working
      *
-     * @param  string $less The input .less file to be loaded
-     * @param  array  $options An array of options to be passed to the `less` configuration var
-     * @return string The link + script tags need to launch lesscss
+     * @param  string $less The input .less file to be loaded.
+     * @param  array  $options An array of options to be passed to the `less` configuration var.
+     * @return string The link + script tags need to launch lesscss.
      */
     public function jsBlock($less, array $options = [])
     {
@@ -196,12 +196,13 @@ class LessHelper extends Helper
 
     /**
      * Compiles an input less file to an output css file using the PHP compiler
-     * @param  array   $input       The input .less files to be compiled
-     * @param  array   $options     Options to be passed to the php parser
-     * @param  array   $modify_vars Less modify_vars
-     * @param  bool    $cache       Whether to cache or not
-     * @return string               If cache is not enabled will return the full CSS compiled.
-     *                              Otherwise it will return the resulting filename from the compilation.
+     * @param  array   $input       The input .less files to be compiled.
+     * @param  array   $options     Options to be passed to the php parser.
+     * @param  array   $modify_vars Less modify_vars.
+     * @param  bool    $cache       Whether to cache or not.
+     * @return string               If cache is not enabled will return the full
+     *                              CSS compiled. Otherwise it will return the
+     *                              resulting filename from the compilation.
      */
     public function compile(array $input, array $options = [], array $modify_vars = [], $cache = true)
     {
@@ -259,8 +260,9 @@ class LessHelper extends Helper
      * Here's also where we define the import_callback used by less.php parser,
      * so it can find files successfully even if they're on plugin folders.
      *
-     * @param array  $options An array of options containing our options combined with the ones for the parsers
-     * @return array $options The resulting $options array
+     * @param array  $options An array of options containing our options
+     *                        combined with the ones for the parsers.
+     * @return array $options The resulting $options array.
      */
     private function setOptions(array $options)
     {
@@ -312,8 +314,8 @@ class LessHelper extends Helper
     /**
      * Returns tha full base url for the given asset
      *
-     * @param  string $plugin Plugin where the asset resides
-     * @param  string $asset  The asset path
+     * @param  string $plugin Plugin where the asset resides.
+     * @param  string $asset  The asset path.
      * @return string
      */
     private function assetBaseUrl($plugin, $asset)
@@ -329,8 +331,8 @@ class LessHelper extends Helper
     /**
      * Builds asset file path for a plugin based on url.
      *
-     * @param string  $url Asset URL
-     * @return string Absolute path for asset file
+     * @param string  $url Asset URL.
+     * @return string      Absolute path for asset file.
      */
     private function pluginAssetFile(array $url)
     {
@@ -346,8 +348,8 @@ class LessHelper extends Helper
     /**
      * Splits an asset URL
      *
-     * @param  string $url Asset URL
-     * @return array       The plugin as first key and the rest basefile as second key
+     * @param  string $url Asset URL.
+     * @return array       The plugin as first key and the rest basefile as second key.
      */
     private function assetSplit($url)
     {
