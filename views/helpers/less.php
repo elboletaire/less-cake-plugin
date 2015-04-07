@@ -133,7 +133,7 @@ class LessHelper extends AppHelper
  * @param  array   $input       The input .less files to be compiled
  * @param  array   $options     Options to be passed to the php parser
  * @param  array   $modify_vars Less modify_vars
- * @param  boolean $cache       Whether to cache or not
+ * @param  bool    $cache       Whether to cache or not
  * @return string               If cache is not enabled will return the full CSS compiled.
  *                              Otherwise it will return the resulting filename from the compilation.
  */
@@ -146,7 +146,7 @@ class LessHelper extends AppHelper
             // ensure to properly load the files
             list($plugin, $basefile) = pluginSplit($in, false);
 
-            if (!empty($plugin) && $this->notFile($basefile)) {
+            if (!empty($plugin) && $this->isNotAFile($basefile)) {
                 $less = realpath(App::pluginPath($plugin) . 'webroot' . DS . $basefile);
 
                 if ($less !== false) {
@@ -202,7 +202,7 @@ class LessHelper extends AppHelper
             // The import callback ensures that if a file is not found in the
             // app's webroot, it will search for that file in its plugin's
             // webroot path
-            'import_callback' => function($lessTree) {
+            'import_callback' => function ($lessTree) {
                 if ($path_and_uri = $lessTree->PathAndUri()) {
                     return $path_and_uri;
                 }
@@ -284,7 +284,8 @@ class LessHelper extends AppHelper
  * @param  string $basefile Class name
  * @return bool             Return true if not match with any file extension
  */
-    private function notFile($basefile) {
+    private function isNotAFile($basefile)
+    {
         $extensions = array('less', 'css');
 
         if (in_array($basefile, $extensions)) {
