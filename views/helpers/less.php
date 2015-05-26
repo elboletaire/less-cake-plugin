@@ -233,7 +233,7 @@ class LessHelper extends AppHelper
         $options['js'] = array_merge($this->lessjs_defaults, $options['js']);
 
         if (empty($options['less'])) {
-            $options['less'] = 'less.min';
+            $options['less'] = '/less/js/less.min';
         }
 
         if (!isset($options['cache'])) {
