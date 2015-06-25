@@ -134,10 +134,10 @@ class LessHelper extends Helper
      * @param  array  $options     Options in 'js' key will be pased to the less.js
      *                             parser and options in 'parser' will be passed to the less.php parser.
      * @param  array  $modify_vars Array of modify vars.
-     * @param  array  $options_for_css Array of options passed on to Html->css
+     * @param  array  $css_options Array of options passed to Html->css().
      * @return string
      */
-    public function less($less = 'styles.less', array $options = [], array $modify_vars = [], array $options_for_css = [])
+    public function less($less = 'styles.less', array $options = [], array $modify_vars = [], array $css_options = [])
     {
         $options = $this->setOptions($options);
         $less    = (array)$less;
@@ -154,7 +154,7 @@ class LessHelper extends Helper
             if (!$options['cache']) {
                 return $this->Html->formatTemplate('style', ['content' => $css]);
             }
-            return $this->Html->css($css, $options_for_css);
+            return $this->Html->css($css, $css_options);
         } catch (\Exception $e) {
             // env must be development in order to see errors on-screen
             if (Configure::read('debug')) {
