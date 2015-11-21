@@ -15,7 +15,7 @@
     "require": {
         "php": ">=5.4.19",
         "cakephp/cakephp": "~3.0",
-        "oyejorge/less.php": "1.7.0.2"
+        "oyejorge/less.php": "~1.7"
     },
     "autoload": {
         "psr-4": {
