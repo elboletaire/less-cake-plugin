@@ -290,6 +290,10 @@ class LessHelper extends Helper
             }
         ]);
 
+        if (Configure::read('debug')) {
+            $this->parser_defaults['sourceMap'] = true;
+        }
+
         if (empty($options['parser'])) {
             $options['parser'] = [];
         }
