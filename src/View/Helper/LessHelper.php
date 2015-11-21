@@ -290,7 +290,7 @@ class LessHelper extends Helper
             }
         ]);
 
-        if (Configure::read('debug')) {
+        if (Configure::read('debug') && !isset($this->parser_defaults['sourceMap'])) {
             $this->parser_defaults['sourceMap'] = true;
         }
 
