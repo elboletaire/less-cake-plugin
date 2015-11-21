@@ -31,7 +31,8 @@ class LessHelperTest extends TestCase
     public function testLess()
     {
         $options = [
-            'cache' => false
+            'cache' => false,
+            'parser' => ['sourceMap' => false]
         ];
 
         // [Less.php] Basic compiling
