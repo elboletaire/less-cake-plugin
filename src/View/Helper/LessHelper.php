@@ -235,6 +235,10 @@ class LessHelper extends Helper
             }
         }
 
+        if (Configure::read('debug') && !isset($options['sourceMap'])) {
+            $options['sourceMap'] = true;
+        }
+
         if ($cache) {
             $options += ['cache_dir' => $this->css_path];
             return \Less_Cache::Get($to_parse, $options, $modify_vars);
@@ -289,10 +293,6 @@ class LessHelper extends Helper
                 return null;
             }
         ]);
-
-        if (Configure::read('debug') && !isset($this->parser_defaults['sourceMap'])) {
-            $this->parser_defaults['sourceMap'] = true;
-        }
 
         if (empty($options['parser'])) {
             $options['parser'] = [];

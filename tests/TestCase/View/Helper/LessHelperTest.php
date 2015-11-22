@@ -45,7 +45,7 @@ class LessHelperTest extends TestCase
 
         // [Less.php] Compiling using cache (here we only check for the
         // resulting tag, as the compilation checks are made in testCompile)
-        $result = $this->Less->less('less/test.less');
+        $result = $this->Less->less('less/test.less', ['parser' => ['sourceMap' => false]]);
         $this->assertHtml([
             'link' => [
                 'rel' => 'stylesheet',
@@ -54,7 +54,7 @@ class LessHelperTest extends TestCase
         ], $result);
 
         // Trying the js fallback
-        $result = $this->Less->less('less/test_error.less');
+        $result = $this->Less->less('less/test_error.less', ['parser' => ['sourceMap' => false]]);
         $this->assertHtml([
             'link' => [
                 'rel' => 'stylesheet/less',
@@ -94,7 +94,8 @@ class LessHelperTest extends TestCase
     public function testCompile()
     {
         $options = [
-            'compress' => true
+            'compress' => true,
+            'sourceMap' => false
         ];
 
         // Basic compiling
