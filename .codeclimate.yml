@@ -1,4 +1,18 @@
-languages:
-  PHP: true
+engines:
+  phpmd:
+    enabled: true
+  fixme:
+    enabled: true
+    config:
+      strings:
+      - TODO
+      - FIXME
+      - BUG
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - php
 exclude_paths:
-- "tests/*"
+- ".codeclimate.yml"
+- "**/vendor/**/*"
