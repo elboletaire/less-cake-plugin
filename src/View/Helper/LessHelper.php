@@ -147,7 +147,7 @@ class LessHelper extends Helper
         }
 
         try {
-            $css = $this->compile($less, $options['parser'], $modifyVars, $options['cache']);
+            $css = $this->compile($less, $options['cache'], $options['parser'], $modifyVars);
             if (isset($options['tag']) && !$options['tag']) {
                 return $css;
             }
@@ -206,7 +206,7 @@ class LessHelper extends Helper
      *                              CSS compiled. Otherwise it will return the
      *                              resulting filename from the compilation.
      */
-    protected function compile(array $input, array $options = [], array $modifyVars = [], $cache)
+    protected function compile(array $input, $cache, array $options = [], array $modifyVars = [])
     {
         $parse = $this->prepareInputFilesForParsing($input);
 
