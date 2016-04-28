@@ -4,7 +4,7 @@ Less parser plugin for CakePHP 3.X
 [![Build status](https://img.shields.io/travis/elboletaire/less-cake-plugin.svg?style=flat-square)](https://travis-ci.org/elboletaire/less-cake-plugin)
 [![Code coverage](https://img.shields.io/coveralls/elboletaire/less-cake-plugin.svg?style=flat-square)](https://coveralls.io/github/elboletaire/less-cake-plugin)
 [![License](https://img.shields.io/packagist/l/elboletaire/less-cake-plugin.svg?style=flat-square)](https://github.com/elboletaire/less-cake-plugin/blob/master/LICENSE)
-[![Latest Stable Version](https://img.shields.io/packagist/v/elboletaire/less-cake-plugin.svg?style=flat-square)](https://github.com/elboletaire/less-cake-plugin/releases)
+[![Latest Stable Version](https://img.shields.io/github/release/elboletaire/less-cake-plugin.svg?style=flat-square)](https://github.com/elboletaire/less-cake-plugin/releases)
 [![Total Downloads](https://img.shields.io/packagist/dt/elboletaire/less-cake-plugin.svg?style=flat-square)](https://packagist.org/packages/elboletaire/less-cake-plugin)
 [![Code Climate](https://img.shields.io/codeclimate/github/elboletaire/less-cake-plugin.svg?style=flat-square)](https://codeclimate.com/github/elboletaire/less-cake-plugin)
 
