@@ -191,29 +191,29 @@ class LessHelperTest extends TestCase
 
         // Basic compiling
         $compile = static::getProtectedMethod('compile');
-        $result = $compile->invokeArgs($this->Less, [['less/test.less'], $options, [], false]);
+        $result = $compile->invokeArgs($this->Less, [['less/test.less'], false, $options, []]);
         $this->assertTextEquals('body{background-color: #000}', $result);
 
         // Changing the bgcolor var
-        $result = $compile->invokeArgs($this->Less, [['less/test.less'], $options, ['bgcolor' => 'magenta'], false]);
+        $result = $compile->invokeArgs($this->Less, [['less/test.less'], false, $options, ['bgcolor' => 'magenta']]);
         $this->assertTextEquals('body{background-color: #f0f}', $result);
 
         // Compiling plugin file
-        $result = $compile->invokeArgs($this->Less, [['Test.less/test.less'], $options, [], false]);
+        $result = $compile->invokeArgs($this->Less, [['Test.less/test.less'], false, $options, []]);
         $this->assertTextEquals('body{background-color: #f0f}', $result);
 
         // Same but not using plugin notation
-        $result = $compile->invokeArgs($this->Less, [['/Test/less/test.less'], $options, [], false]);
+        $result = $compile->invokeArgs($this->Less, [['/Test/less/test.less'], false, $options, []]);
         $this->assertTextEquals('body{background-color: #f0f}', $result);
 
         // Compiling with cache
-        $result = $compile->invokeArgs($this->Less, [['less/test.less'], $options, [], true]);
+        $result = $compile->invokeArgs($this->Less, [['less/test.less'], true, $options, []]);
         $this->assertRegExp('/lessphp_[a-z0-9]+\.css/', $result);
         $result = file_get_contents(WWW_ROOT . 'css' . DS . $result);
         $this->assertTextEquals('body{background-color: #000}', $result);
 
         // Compiling with cache and modify_vars
-        $result = $compile->invokeArgs($this->Less, [['less/test.less'], $options, ['bgcolor' => 'darkorange'], true]);
+        $result = $compile->invokeArgs($this->Less, [['less/test.less'], true, $options, ['bgcolor' => 'darkorange']]);
         $this->assertRegExp('/lessphp_[a-z0-9]+\.css/', $result);
         $result = file_get_contents(WWW_ROOT . 'css' . DS . $result);
         $this->assertTextEquals('body{background-color: #ff8c00}', $result);
