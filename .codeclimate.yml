@@ -13,6 +13,11 @@ engines:
     config:
       languages:
       - php
+ratings:
+  paths:
+  - "src"
+  - "tests"
 exclude_paths:
+- "webroot/js/less.min.js"
 - ".codeclimate.yml"
 - "**/vendor/**/*"
