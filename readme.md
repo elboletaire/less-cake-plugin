@@ -6,6 +6,7 @@ Less parser plugin for CakePHP 3.X
 [![License](https://img.shields.io/packagist/l/elboletaire/less-cake-plugin.svg?style=flat-square)](https://github.com/elboletaire/less-cake-plugin/blob/master/LICENSE)
 [![Latest Stable Version](https://img.shields.io/packagist/v/elboletaire/less-cake-plugin.svg?style=flat-square)](https://github.com/elboletaire/less-cake-plugin/releases)
 [![Total Downloads](https://img.shields.io/packagist/dt/elboletaire/less-cake-plugin.svg?style=flat-square)](https://packagist.org/packages/elboletaire/less-cake-plugin)
+[![Code Climate](https://img.shields.io/codeclimate/github/elboletaire/less-cake-plugin.svg?style=flat-square)](https://codeclimate.com/github/elboletaire/less-cake-plugin)
 
 This plugin has a helper to help you parsing `.less` files in CakePHP 3.0 applications.
 
