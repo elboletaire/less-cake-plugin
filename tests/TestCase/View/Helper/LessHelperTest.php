@@ -9,6 +9,7 @@
 namespace Less\Test\TestCase\View\Helper;
 
 use Less\View\Helper\LessHelper;
+use Cake\Core\Configure;
 use Cake\TestSuite\TestCase;
 use Cake\View\View;
 
@@ -19,8 +20,24 @@ class LessHelperTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $View = new View();
-        $this->Less = new LessHelper($View);
+        $view = new View();
+        $this->Less = new LessHelper($view);
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        $this->removeCacheFiles();
+    }
+
+    private function removeCacheFiles()
+    {
+        $css = scandir(WWW_ROOT . 'css');
+        foreach ($css as $file) {
+            if (strpos($file, 'lessphp_') === 0) {
+                unlink(WWW_ROOT . 'css' . DS . $file);
+            }
+        }
     }
 
     public function testFetch()
@@ -69,6 +86,79 @@ class LessHelperTest extends TestCase
         ], $result);
     }
 
+    public function testLessDefaultOptions()
+    {
+        Configure::write('debug', 0);
+        $result = $this->Less->less('less/test.less');
+        $this->assertHtml([
+            'link' => [
+                'rel' => 'stylesheet',
+                'href' => 'preg:/\/css\/lessphp_[0-9a-z]+\.css/'
+            ]
+        ], $result);
+        $matches = [];
+        preg_match('@href="/css/(lessphp_[0-9a-z]+\.css)"@', $result, $matches);
+        $result = array_pop($matches);
+        $contents = file_get_contents(WWW_ROOT . 'css' . DS . $result);
+        $this->assertNotContains('sourceMappingURL=data:application/json,', $contents);
+    }
+
+    public function testLessEnablesSourceMap()
+    {
+        Configure::write('debug', 1);
+        $result = $this->Less->less('less/test.less', ['tag' => false]);
+        $contents = file_get_contents(WWW_ROOT . 'css' . DS . $result);
+        $this->assertContains('sourceMappingURL=data:application/json,', $contents);
+    }
+
+    public function testLessWithNotExistingFiles()
+    {
+        Configure::write('debug', 0);
+        $result = $this->Less->less('less/whatever.less');
+        $this->assertHtml([
+            'link' => [
+                'rel' => 'stylesheet/less',
+                'href' => '/less/whatever.less'
+            ],
+            ['script' => true],
+            'preg:/\/\/<!\[CDATA\[\s*less\s=\s\{"env":"production"\};\s*\/\/\]\]>\s*/',
+            '/script',
+            'script' => [
+                'src' => '/less/js/less.min.js'
+            ]
+        ], $result);
+
+        Configure::write('debug', 1);
+        $result = $this->Less->less('less/whatever.less');
+        $this->assertHtml([
+            'link' => [
+                'rel' => 'stylesheet/less',
+                'href' => '/less/whatever.less'
+            ],
+            ['script' => true],
+            'preg:/\/\/<!\[CDATA\[\s*less\s=\s\{"env":"development"\};\s*\/\/\]\]>\s*/',
+            '/script'
+        ], $result);
+    }
+
+    public function testLessReturnsJsBlockIfDevelopmentEnabled()
+    {
+        Configure::write('debug', 0);
+        $result = $this->Less->less('less/whatever.less', ['js' => ['env' => 'development']]);
+        $this->assertHtml([
+            'link' => [
+                'rel' => 'stylesheet/less',
+                'href' => '/less/whatever.less'
+            ],
+            ['script' => true],
+            'preg:/\/\/<!\[CDATA\[\s*less\s=\s\{"env":"development"\};\s*\/\/\]\]>\s*/',
+            '/script',
+            'script' => [
+                'src' => '/less/js/less.min.js'
+            ]
+        ], $result);
+    }
+
     public function testJsBlock()
     {
         $options = [
@@ -76,7 +166,8 @@ class LessHelperTest extends TestCase
             'js'   => []
         ];
 
-        $result = $this->Less->jsBlock('less/test.less', $options);
+        $jsBlock = static::getProtectedMethod('jsBlock');
+        $result = $jsBlock->invokeArgs($this->Less, ['less/test.less', $options]);
         $this->assertHtml([
             'link' => [
                 'rel' => 'stylesheet/less',
@@ -99,29 +190,30 @@ class LessHelperTest extends TestCase
         ];
 
         // Basic compiling
-        $result = $this->Less->compile(['less/test.less'], $options, [], false);
+        $compile = static::getProtectedMethod('compile');
+        $result = $compile->invokeArgs($this->Less, [['less/test.less'], $options, [], false]);
         $this->assertTextEquals('body{background-color: #000}', $result);
 
         // Changing the bgcolor var
-        $result = $this->Less->compile(['less/test.less'], $options, ['bgcolor' => 'magenta'], false);
+        $result = $compile->invokeArgs($this->Less, [['less/test.less'], $options, ['bgcolor' => 'magenta'], false]);
         $this->assertTextEquals('body{background-color: #f0f}', $result);
 
         // Compiling plugin file
-        $result = $this->Less->compile(['Test.less/test.less'], $options, [], false);
+        $result = $compile->invokeArgs($this->Less, [['Test.less/test.less'], $options, [], false]);
         $this->assertTextEquals('body{background-color: #f0f}', $result);
 
         // Same but not using plugin notation
-        $result = $this->Less->compile(['/Test/less/test.less'], $options, [], false);
+        $result = $compile->invokeArgs($this->Less, [['/Test/less/test.less'], $options, [], false]);
         $this->assertTextEquals('body{background-color: #f0f}', $result);
 
         // Compiling with cache
-        $result = $this->Less->compile(['less/test.less'], $options);
+        $result = $compile->invokeArgs($this->Less, [['less/test.less'], $options, [], true]);
         $this->assertRegExp('/lessphp_[a-z0-9]+\.css/', $result);
         $result = file_get_contents(WWW_ROOT . 'css' . DS . $result);
         $this->assertTextEquals('body{background-color: #000}', $result);
 
         // Compiling with cache and modify_vars
-        $result = $this->Less->compile(['less/test.less'], $options, ['bgcolor' => 'darkorange']);
+        $result = $compile->invokeArgs($this->Less, [['less/test.less'], $options, ['bgcolor' => 'darkorange'], true]);
         $this->assertRegExp('/lessphp_[a-z0-9]+\.css/', $result);
         $result = file_get_contents(WWW_ROOT . 'css' . DS . $result);
         $this->assertTextEquals('body{background-color: #ff8c00}', $result);
@@ -129,7 +221,7 @@ class LessHelperTest extends TestCase
 
     public function testAssetBaseUrl()
     {
-        $assetBaseUrl = self::getProtectedMethod('assetBaseUrl');
+        $assetBaseUrl = static::getProtectedMethod('assetBaseUrl');
         $result = $assetBaseUrl->invokeArgs($this->Less, [
             'Less',
             'less/styles.less'
