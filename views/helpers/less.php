@@ -244,6 +244,20 @@ class LessHelper extends AppHelper
     }
 
 /**
+ * Returns tha full base url for the given asset
+ *
+ * @param  string $plugin Plugin where the asset resides.
+ * @param  string $asset  The asset path.
+ * @return string
+ */
+    protected function assetBaseUrl($plugin, $asset)
+    {
+        $dir  = dirname($asset);
+        $path = !empty($dir) && $dir != '.' ? "/$dir" : null;
+        return Router::url($plugin . $path, true);
+    }
+
+/**
  * Splits an asset URL
  *
  * @param  string $url Asset URL
