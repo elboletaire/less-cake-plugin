@@ -226,19 +226,19 @@ class LessHelperTest extends TestCase
             'Less',
             'less/styles.less'
         ]);
-        $this->assertEquals('http://localhost/Less/less', $result);
+        $this->assertEquals('/Less/less', $result);
 
         $result = $assetBaseUrl->invokeArgs($this->Less, [
             'Bootstrap',
             'css/whatever.less'
         ]);
-        $this->assertEquals('http://localhost/Bootstrap/css', $result);
+        $this->assertEquals('/Bootstrap/css', $result);
 
         $result = $assetBaseUrl->invokeArgs($this->Less, [
             'Less',
             'whatever.less'
         ]);
-        $this->assertEquals('http://localhost/Less', $result);
+        $this->assertEquals('/Less', $result);
     }
 
     protected static function getProtectedMethod($name)

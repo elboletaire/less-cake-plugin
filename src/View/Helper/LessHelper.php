@@ -343,9 +343,7 @@ class LessHelper extends Helper
         $dir  = dirname($asset);
         $path = !empty($dir) && $dir != '.' ? "/$dir" : null;
 
-        return $this->Url->assetUrl($plugin . $path, [
-            'fullBase' => true
-        ]);
+        return $this->Url->assetUrl($plugin . $path);
     }
 
     /**
