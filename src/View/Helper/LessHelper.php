@@ -4,7 +4,7 @@
  *
  * @author Òscar Casajuana <elboletaire@underave.net>
  * @license Apache-2.0
- * @copyright Òscar Casajuana 2013-2015
+ * @copyright Òscar Casajuana 2013-2017
  */
 namespace Less\View\Helper;
 
@@ -147,14 +147,16 @@ class LessHelper extends Helper
         }
 
         try {
-            $css = $this->compile($less, $options['cache'], $options['parser'], $modifyVars);
+        	$cache_dir = isset($options['parser']['cache_dir']) ?$options['parser']['cache_dir']:""; 
+            $css = $cache_dir . $this->compile($less, $options['cache'], $options['parser'], $modifyVars);
             if (isset($options['tag']) && !$options['tag']) {
                 return $css;
             }
             if (!$options['cache']) {
                 return $this->Html->formatTemplate('style', ['content' => $css]);
             }
-            return $this->Html->css($css);
+            
+            return $this->Html->css($css,$options['css']);
         } catch (\Exception $e) {
             // env must be development in order to see errors on-screen
             if (Configure::read('debug')) {
@@ -211,8 +213,14 @@ class LessHelper extends Helper
         $parse = $this->prepareInputFilesForParsing($input);
 
         if ($cache) {
-            $options += ['cache_dir' => $this->cssPath];
-            return \Less_Cache::Get($parse, $options, $modifyVars);
+        	if( !isset($options['cache_dir'])){
+        		$options['cache_dir'] =$this->cssPath;
+        	} else if( substr( $options['cache_dir'], 0, 1 ) =='/'){
+       			$options['cache_dir']  = WWW_ROOT . $options['cache_dir'];
+       		} else {
+       			$options['cache_dir']  = trim($this->cssPath, '/') . $options['cache_dir'];
+	       	}
+        	return \Less_Cache::Get($parse, $options, $modifyVars);
         }
 
         $lessc = new \Less_Parser($options);
@@ -307,6 +315,7 @@ class LessHelper extends Helper
         ]);
         // @codeCoverageIgnoreEnd
 
+        
         if (empty($options['parser'])) {
             $options['parser'] = [];
         }
@@ -327,7 +336,10 @@ class LessHelper extends Helper
         if (!isset($options['cache'])) {
             $options['cache'] = true;
         }
-
+        if (empty($options['css'])) {
+        	$options['css'] = [];
+        }
+        
         return $options;
     }
 
